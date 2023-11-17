@@ -41,4 +41,10 @@ def load_font_data() -> NDArray:
        [0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]   # 0x7
     ]
 
-    return np.array(font)
+    font_matrix = np.zeros((len(font), 7, 5), dtype=np.int8)
+    for i, char in enumerate(font):
+        for j, row in enumerate(char):
+            for k in range(5):
+                font_matrix[i, j, k] = (row >> (4-k)) & 0x01
+
+    return font_matrix
