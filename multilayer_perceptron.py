@@ -3,9 +3,17 @@ import numpy as np
 from numpy._typing import NDArray
 import random
 import copy
+import signal
 
 from activation_functions import ActivationFunction
 from optimization_methods import OptimizationMethod
+
+stop = False
+def signal_handler(sig, frame):
+    global stop
+    stop = True
+    print("Stopping...")
+signal.signal(signal.SIGINT, signal_handler)
 
 
 def multilayer_perceptron(
@@ -93,6 +101,9 @@ def multilayer_perceptron(
             percent += 5
 
         epoch += 1
+
+        if stop:
+            break
 
 
     return best_network, errors_in_epoch
