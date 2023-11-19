@@ -68,6 +68,13 @@ def relu(x: NDArray) -> NDArray:
 def relu_derivative(x: NDArray) -> NDArray:
     return np.where(x > 0, 1, 0)
 
+def relu_normalize(x: NDArray | float) -> NDArray | float:
+    if isinstance(x, float):
+        return x / abs(x)
+
+    max_val = max(abs(x))
+    return x / max_val
+
 
 # ----- activation function generator -----
 ActivationFunction = Callable[[NDArray | float], NDArray | float]
@@ -88,8 +95,8 @@ def get_activation_function(
             lambda x: tanh_derivative(x, beta),
             tanh_normalize,
         )
-    # elif activation_function == "relu":
-         # return relu, relu_derivative
+    elif activation_function == "relu":
+         return relu, relu_derivative, relu_normalize
     elif activation_function == "identity":
         return identity, identity_derivative, identity_normalize
     else:
