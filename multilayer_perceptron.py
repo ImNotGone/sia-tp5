@@ -9,10 +9,14 @@ from activation_functions import ActivationFunction
 from optimization_methods import OptimizationMethod
 
 stop = False
+
+
 def signal_handler(sig, frame):
     global stop
     stop = True
     print("Stopping...")
+
+
 signal.signal(signal.SIGINT, signal_handler)
 
 
@@ -45,7 +49,7 @@ def multilayer_perceptron(
 
         # For each training set
         weight_delta: List[NDArray] = []
-        #error = 0.0
+        # error = 0.0
 
         for input, expected_output in training_set:
             # Propagate the input through the network
@@ -54,7 +58,7 @@ def multilayer_perceptron(
             )
 
             # Compute the error
-            #error += compute_error(neuron_activations[-1], expected_output)
+            # error += compute_error(neuron_activations[-1], expected_output)
 
             # Calculate the weight delta
             current_weight_delta = backpropagation(
@@ -73,22 +77,22 @@ def multilayer_perceptron(
                 for i in range(len(weight_delta)):
                     weight_delta[i] += current_weight_delta[i]
 
-
-
         # Average the weight delta and apply the optimization method
         weight_delta = [delta / batch_size for delta in weight_delta]
-        weight_delta = optimization_method(weight_delta, epoch+1)
+        weight_delta = optimization_method(weight_delta, epoch + 1)
 
         update_weights(current_network, weight_delta)
 
-
         # If we have a better network, save it
-        new_error=0.0
+        new_error = 0.0
         for input, expected_output in data:
-            new_error+= compute_error(predict(input,current_network,neuron_activation_function),expected_output)
-            
+            new_error += compute_error(
+                predict(input, current_network, neuron_activation_function),
+                expected_output,
+            )
+
         errors_in_epoch += [new_error]
-        
+
         if new_error < best_error:
             best_error = new_error
             best_network = copy.deepcopy(current_network)
@@ -96,7 +100,7 @@ def multilayer_perceptron(
         # Each 5% of the epochs, print progress and error
         if epoch % (max_epochs / 20) == 0:
             print(
-                f"Epoch {epoch} - {percent}% - Error: {best_error} - Target: {target_error}"
+                f"Epoch {epoch} - {percent}% - Error: {new_error} - Best: {best_error} - Target: {target_error}"
             )
             percent += 5
 
@@ -104,7 +108,6 @@ def multilayer_perceptron(
 
         if stop:
             break
-
 
     return best_network, errors_in_epoch
 
@@ -123,14 +126,18 @@ def initialize_weights(
         # Generate random weights for each layer
         # if first layer
         if i == 0:
-            weights += [np.random.uniform(-1,1,(hidden_layer_sizes[i], input_layer_size))]
+            weights += [
+                np.random.uniform(-1, 1, (hidden_layer_sizes[i], input_layer_size))
+            ]
         else:
             weights += [
-                np.random.uniform(-1,1,(hidden_layer_sizes[i], hidden_layer_sizes[i - 1]))
+                np.random.uniform(
+                    -1, 1, (hidden_layer_sizes[i], hidden_layer_sizes[i - 1])
+                )
             ]
 
     # add output layer
-    weights += [np.random.uniform(-1,1,(output_layer_size, hidden_layer_sizes[-1]))]
+    weights += [np.random.uniform(-1, 1, (output_layer_size, hidden_layer_sizes[-1]))]
     return weights
 
 
@@ -221,6 +228,7 @@ def backpropagation(
         ] + hidden_layer_weight_deltas
 
     return hidden_layer_weight_deltas
+
 
 def predict(
     input: NDArray,

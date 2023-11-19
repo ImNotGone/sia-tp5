@@ -7,6 +7,7 @@ from multilayer_perceptron import multilayer_perceptron
 
 import numpy as np
 
+
 def standard_autoencoder(
     data: NDArray,
     hidden_layer_sizes: List[int],
@@ -36,6 +37,7 @@ def standard_autoencoder(
         optimization_method,
     )
 
+
 def denoising_autoencoder(
     data: NDArray,
     hidden_layer_sizes: List[int],
@@ -62,7 +64,7 @@ def denoising_autoencoder(
 
     mlp_data = [(noisy_data[i], data[i]) for i in range(data.shape[0])]
 
-    best_network, errors_in_epoch=multilayer_perceptron(
+    best_network, errors_in_epoch = multilayer_perceptron(
         mlp_data,
         mlp_hidden_layer_sizes,
         mlp_output_layer_size,
