@@ -1,7 +1,9 @@
+from numpy import e
 from dataset_loaders import load_font_data
 from activation_functions import get_activation_function
 from autoencoder import standard_autoencoder
 from multilayer_perceptron import forward_propagation
+from plots import plot_errors_per_epoch
 from utils import (
     create_image,
     deserialize_weights,
@@ -35,14 +37,17 @@ def main():
         (
             activation_function,
             activation_derivative,
-            activation_normalize,
+            _,
         ) = get_activation_function(
             config["activation"]["function"], config["activation"]["beta"]
         )
 
         optimization_method = get_optimization_method(config["optimization"])
 
-        if config["load_weights"]:
+        load_weights = config["load_weights"]
+
+        errors_per_epoch = []
+        if load_weights:
             weights = deserialize_weights(config["weights_file"])
         else:
             weights, errors_per_epoch = standard_autoencoder(
@@ -68,6 +73,11 @@ def main():
 
         create_image(original_fonts, "original.png", (7, 5))
         create_image(reconstructed_fonts, "reconstructed.png", (7, 5))
+
+        if load_weights:
+            return
+
+        plot_errors_per_epoch(errors_per_epoch)
 
         if config["save_weights"]:
             serialize_weights(weights, config["weights_file"])
