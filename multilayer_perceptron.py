@@ -29,6 +29,7 @@ def multilayer_perceptron(
     best_error = np.Infinity
     best_network = None
     epoch = 0
+    percent = 0
 
     while best_error > target_error and epoch < max_epochs:
         # Get a random training set
@@ -64,6 +65,8 @@ def multilayer_perceptron(
                 for i in range(len(weight_delta)):
                     weight_delta[i] += current_weight_delta[i]
 
+
+
         # Average the weight delta and apply the optimization method
         weight_delta = [delta / batch_size for delta in weight_delta]
         weight_delta = optimization_method(weight_delta)
@@ -82,7 +85,15 @@ def multilayer_perceptron(
             best_error = new_error
             best_network = copy.deepcopy(current_network)
 
+        # Each 5% of the epochs, print progress and error
+        if epoch % (max_epochs / 20) == 0:
+            print(
+                f"Epoch {epoch} - {percent}% - Error: {best_error} - Target: {target_error}"
+            )
+            percent += 5
+
         epoch += 1
+
 
     return best_network, errors_in_epoch
 
