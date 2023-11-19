@@ -69,7 +69,7 @@ def multilayer_perceptron(
 
         # Average the weight delta and apply the optimization method
         weight_delta = [delta / batch_size for delta in weight_delta]
-        weight_delta = optimization_method(weight_delta)
+        weight_delta = optimization_method(weight_delta, epoch+1)
 
         update_weights(current_network, weight_delta)
 
