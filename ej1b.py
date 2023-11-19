@@ -3,6 +3,7 @@ from activation_functions import get_activation_function
 from autoencoder import denoising_autoencoder
 from multilayer_perceptron import forward_propagation
 from utils import (
+    create_image,
     deserialize_weights,
     pretty_print_font,
     get_batch_size,
@@ -46,7 +47,7 @@ def main():
         if config["load_weights"]:
             weights = deserialize_weights(config["weights_file"])
         else:
-            weights, errors_per_epoch = denoising_autoencoder(
+            weights, errors_per_epoch, noisy_data = denoising_autoencoder(
                 data,
                 hidden_layer_sizes,
                 latent_space_size,
@@ -59,20 +60,19 @@ def main():
                 noise_probability,
             )
 
+        original_fonts = data.reshape((-1, 7, 5))
+        original_noisy_fonts= noisy_data.reshape((-1, 7, 5))
+        reconstructed_fonts = []
         for sample in data:
-            # Convert into a 7x5 matrix
-            font = sample.reshape((7, 5))
-            pretty_print_font(font)
-            print()
-
-            # Print the reconstructed font
             reconstructed_sample = forward_propagation(
                 sample, weights, activation_function
             )[0][-1]
             reconstructed_font = reconstructed_sample.reshape((7, 5))
-            pretty_print_font(reconstructed_font)
-            print("-" * 20)
-            print()
+            reconstructed_fonts.append(reconstructed_font)
+
+        create_image(original_fonts, "original.png", (7, 5))
+        create_image(original_noisy_fonts, "original noisy.png", (7, 5))
+        create_image(reconstructed_fonts, "reconstructed.png", (7, 5))
 
         if config["save_weights"]:
             serialize_weights(weights, config["weights_file"])

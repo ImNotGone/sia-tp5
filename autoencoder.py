@@ -62,8 +62,7 @@ def denoising_autoencoder(
 
     mlp_data = [(noisy_data[i], data[i]) for i in range(data.shape[0])]
 
-
-    return multilayer_perceptron(
+    best_network, errors_in_epoch=multilayer_perceptron(
         mlp_data,
         mlp_hidden_layer_sizes,
         mlp_output_layer_size,
@@ -74,3 +73,4 @@ def denoising_autoencoder(
         neuron_activation_function_derivative,
         optimization_method,
     )
+    return best_network, errors_in_epoch, noisy_data
