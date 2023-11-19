@@ -1,4 +1,8 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
+import json
+import numpy as np
+
+
 def get_batch_size(config: Dict[str, Any], data_size: int) -> int:
     strategy = config["training_strategy"]
 
@@ -26,3 +30,22 @@ def pretty_print_font(bitmap):
             else:
                 print("█", end="")
         print()
+
+
+def serialize_weights(weights, path="weights.json"):
+    # Convert the weights to a list of lists
+    weights = [[w.tolist() for w in layer] for layer in weights]
+
+    with open(path, "w") as f:
+        json.dump(weights, f)
+
+
+def deserialize_weights(path="weights.json") -> List[np.ndarray]:
+    with open(path, "r") as f:
+        weights = json.load(f)
+
+        # Convert the weights to numpy arrays
+        weights = [[np.array(w) for w in layer] for layer in weights]
+        weights = [np.array(layer) for layer in weights]
+
+        return weights

@@ -16,5 +16,9 @@
         "training_strategy": "batch",
         "batch_size": 10,
 
-        "noise_probability": 0.01
+        "noise_probability": 0.01,
+
+        "load_weights": false,
+        "save_weights": true,
+        "weights_file": "weights.json"
     }
