@@ -14,5 +14,7 @@
         "max_epochs": 100000,
     
         "training_strategy": "batch",
-        "batch_size": 10
+        "batch_size": 10,
+
+        "noise_probability": 0.01
     }
