@@ -1,3 +1,4 @@
+from typing import Any, Dict
 def get_batch_size(config: Dict[str, Any], data_size: int) -> int:
     strategy = config["training_strategy"]
 
