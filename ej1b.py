@@ -9,6 +9,7 @@ from utils import (
     get_batch_size,
     serialize_weights,
 )
+from noise import flipping_noise
 
 import json
 
@@ -30,7 +31,8 @@ def main():
         target_error = config["target_error"]
         max_epochs = config["max_epochs"]
 
-        noise_probability = config["noise_probability"]
+        noise_probability_training = config["noise_probability_training"]
+        noise_probability_testing= config["noise_probability_testing"]
 
         batch_size = get_batch_size(config, data.shape[0])
 
@@ -57,13 +59,14 @@ def main():
                 activation_function,
                 activation_derivative,
                 optimization_method,
-                noise_probability,
+                noise_probability_training,
             )
-
+        testing_data=flipping_noise(data, noise_probability_testing)
         original_fonts = data.reshape((-1, 7, 5))
         original_noisy_fonts= noisy_data.reshape((-1, 7, 5))
+        testing_fonts=testing_data.reshape((-1, 7, 5))
         reconstructed_fonts = []
-        for sample in data:
+        for sample in testing_data:
             reconstructed_sample = forward_propagation(
                 sample, weights, activation_function
             )[0][-1]
@@ -72,6 +75,7 @@ def main():
 
         create_image(original_fonts, "original.png", (7, 5))
         create_image(original_noisy_fonts, "original noisy.png", (7, 5))
+        create_image(testing_fonts, "testing fonts.png", (7, 5))
         create_image(reconstructed_fonts, "reconstructed.png", (7, 5))
 
         if config["save_weights"]:
