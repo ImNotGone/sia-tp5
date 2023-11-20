@@ -1,17 +1,11 @@
 from typing import List, Tuple
 
 import numpy as np
-import random
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from numpy._typing import NDArray
-from torch.utils.data import DataLoader
-
-import optimization_methods
 from activation_functions import ActivationFunction
 from multilayer_perceptron import multilayer_perceptron
 from optimization_methods import OptimizationMethod
+from loss_functions import (identity, squared_error)
 
 
 def standard_autoencoder(
@@ -84,78 +78,160 @@ def denoising_autoencoder(
     return best_network, errors_in_epoch, noisy_data
 
 
-class VAE():
-    def __init__(self, act_func, max_epochs, batch_size, num_samples, input_dim, latent_dim, hidden_dim):
-        # Initialize weights and biases
-        # Encoder weights and biases
-        self.encoder_weights = np.random.randn(input_dim, hidden_dim)
-        self.encoder_bias_hidden = np.zeros(hidden_dim)
-        self.encoder_weights_mean = np.random.randn(hidden_dim, latent_dim)
-        self.encoder_weights_var = np.random.randn(hidden_dim, latent_dim)
-        self.encoder_bias_mean = np.zeros(latent_dim)
-        self.encoder_bias_var = np.zeros(latent_dim)
+class Network:
+    def __init__(self, dimensions, learning_rate, max_epochs, batch_size, loss_func, act_func):
+        '''intializes weights matrix and parameters'''
 
-        # Decoder weights and biases
-        self.decoder_weights = np.random.randn(latent_dim, hidden_dim)
-        self.decoder_bias_hidden = np.zeros(hidden_dim)
-        self.decoder_weights_output = np.random.randn(hidden_dim, input_dim)
-        self.decoder_bias_output = np.zeros(input_dim)
+        # initialize weights of network
+        self.weights = {}
+        for i in range(len(dimensions) - 1):
+            self.weights[i] = np.random.uniform(-0.1, 0.1,
+                                                (dimensions[i], dimensions[i + 1]))
 
-        # Define activation function
-        self.act_func = act_func
-
-        # Define number of epochs, batch size, and number of samples
-        self.max_epochs = max_epochs
+        # hyperparameters
+        self.learning_rate = learning_rate
+        self.iter = max_epochs
         self.batch_size = batch_size
-        self.num_samples = num_samples
 
-        self.input_dim = input_dim
+        self.activation = act_func
+
+        self.loss = loss_func
+
+    def _feedforward(self, X):
+        '''feedforward update step'''
+        self._z = {}
+        self._z_act = {0: X}
+
+        for i in range(len(self.weights)):
+            self._z[i] = self._z_act[i] @ self.weights[i]
+            self._z_act[i + 1] = self.activation(self._z[i])[0]
+
+        return self._z_act[i + 1]
+
+    def _backprop(self, X, y, yhat):
+        '''back-propagation algorithm'''
+        n = len(self.weights)
+        delta = -1 * self.loss(y, yhat)[1] * self.activation(self._z[n - 1])[1]
+        grad_weights = {n - 1: self._z_act[n - 1].T @ delta}
+
+        for i in reversed(range(len(self.weights) - 1)):
+            delta = delta @ self.weights[i + 1].T * self.activation(self._z[i])[1]
+            grad_weights[i] = self._z_act[i].T @ delta
+
+        return grad_weights
+
+    def train(self, X, y):
+        '''trains model using stochastic gradient descent'''
+        X_batch = X
+        y_batch = y
+
+        for i in range(self.iter):
+            if self.batch_size > 0 and self.batch_size < X.shape[0]:
+                k = np.random.choice(range(X.shape[0]), self.batch_size, replace=False)
+                X_batch = X[k, :]
+                y_batch = y[k, :]
+
+            yhat = self._feedforward(X_batch)
+            grad_weights = self._backprop(X_batch, y_batch, yhat)
+
+            for j in range(len(self.weights)):
+                self.weights[j] -= self.learning_rate * grad_weights[j]
+
+    def predict(self, X):
+        '''predicts on trained model'''
+        z_act = X
+        for i in range(len(self.weights)):
+            z = z_act @ self.weights[i]
+            z_act = self.activation(z)[0]
+        return z_act
+
+
+class VAE:
+    def __init__(self, dimensions, latent_dim, learning_rate, max_epochs, batch_size, loss_func, act_func):
+
         self.latent_dim = latent_dim
-        self.hidden_dim = hidden_dim
+        self.encoder = Network(dimensions[0] + [2], learning_rate, max_epochs, batch_size, loss_func, act_func)
+        self.decoder = Network([latent_dim] + dimensions[1], learning_rate, max_epochs, batch_size, loss_func, act_func)
 
-    def encode(self, x):
-        hidden = self.act_func(np.dot(x, self.encoder_weights) + self.encoder_bias_hidden)
-        mean = np.dot(hidden, self.encoder_weights_mean) + self.encoder_bias_mean
-        log_var = np.dot(hidden, self.encoder_weights_var) + self.encoder_bias_var
-        return mean, log_var
+        for i in range(len(self.encoder.weights)):
+            self.encoder.weights[i] = np.abs(self.encoder.weights[i])
 
-    def reparameterize(self, mean, log_var):
-        epsilon = np.random.normal(size=mean.shape)
-        std_dev = np.exp(0.5 * log_var)
-        z = mean + std_dev * epsilon
-        return z
+        for i in range(len(self.encoder.weights)):
+            self.decoder.weights[i] = np.abs(self.decoder.weights[i])
 
-    def decode(self, z):
-        hidden = self.act_func(np.dot(z, self.decoder_weights) + self.decoder_bias_hidden)
-        output = self.act_func(np.dot(hidden, self.decoder_weights_output) + self.decoder_bias_output)
-        return output
+        self.batch_size = batch_size
+        self.iter = max_epochs
+        self.encoder.loss = identity
+        self.decoder.loss = squared_error
 
-    def train(self, input_data):
+        self.activation = act_func
 
-        for epoch in range(self.max_epochs):
-            for i in range(0, self.num_samples, self.batch_size):
-                # Get a batch of data
-                batch = input_data[i:i + self.batch_size]
+    def _forwardstep(self, X):
+        # encoder learns parameters
+        latent = self.encoder._feedforward(X)
+        self.mu = latent[:, 0]
+        self.sigma = np.exp(latent[:, 1])
 
-                # Forward pass: Encode, sample, and decode
-                mean, log_var = self.encode(batch)
-                z = self.reparameterize(mean, log_var)
-                reconstructed = self.decode(z)
+        # sample from gaussian with learned parameters
+        epsilon = np.random.normal(0, 1, size=(X.shape[0], self.latent_dim))
+        z_sample = self.mu[:, None] + np.sqrt(self.sigma)[:, None] * epsilon
 
-                # Calculate reconstruction loss (using mean squared error)
-                reconstruction_loss = np.mean(np.square(batch - reconstructed))
+        # pass sampled vector through to decoder
+        X_hat = self.decoder._feedforward(z_sample)
+        return X_hat
 
-                # Calculate KL divergence
-                kl_loss = -0.5 * np.mean(1 + log_var - np.square(mean) - np.exp(log_var))
+    def _kl_divergence_loss(self):
+        d_mu = self.mu
+        d_s2 = 1 - 1 / (2 * (self.sigma + 1e-6))
+        return np.vstack((d_mu, d_s2)).T
 
-                # Total loss
-                total_loss = reconstruction_loss + kl_loss
+    def _backwardstep(self, X, X_hat):
+        # propagate reconstuction error through decoder
+        n = len(self.decoder.weights)
+        delta = -1 * self.decoder.loss(X, X_hat)[1] * self.activation(self.decoder._z[n - 1])[1]
+        decoder_weights = {n - 1: self.decoder._z_act[n - 1].T @ delta}
 
-                # TODO: Backpropagation
-                # TODO: Compute gradients and update weights and biases
+        for i in reversed(range(len(self.decoder.weights) - 1)):
+            delta = delta @ self.decoder.weights[i + 1].T * self.activation(self.decoder._z[i])[1]
+            decoder_weights[i] = self.decoder._z_act[i].T @ delta
 
-                # Print or log training progress
-                print(
-                    f"Epoch [{epoch + 1}/{self.num_epochs}], Batch [{i + 1}/{self.num_samples}], Total Loss: {total_loss}")
+        # add kl-divergence loss
+        m = len(self.encoder.weights)
+        kl_loss = self._kl_divergence_loss()
+        kl_delta = kl_loss * self.activation(self.encoder._z[m - 1])[1]
 
-            # Print or log epoch-wise information
+        delta = delta @ self.decoder.weights[0].T * self.activation(self.encoder._z[m - 1])[1]
+        delta = delta + kl_delta
+        encoder_weights = {m - 1: self.encoder._z_act[n - 1].T @ delta}
+
+        # propagate kl error through encoder
+        for i in reversed(range(len(self.decoder.weights) - 1)):
+            delta = delta @ self.encoder.weights[i + 1].T * self.activation(self.encoder._z[i])[1]
+            encoder_weights[i] = self.encoder._z_act[i].T @ delta
+
+        return encoder_weights, decoder_weights
+
+    def learn(self, X):
+        X_batch = X
+
+        for i in range(self.iter):
+            if self.batch_size > 0 and self.batch_size < X.shape[0]:
+                k = np.random.choice(range(X.shape[0]), self.batch_size, replace=False)
+                X_batch = X[k, :]
+
+            X_hat = self._forwardstep(X_batch)
+            grad_encoder, grad_decoder = self._backwardstep(X_batch, X_hat)
+
+            for j in range(len(self.encoder.weights)):
+                self.encoder.weights[j] -= self.encoder.learning_rate * grad_encoder[j]
+
+            for j in range(len(self.decoder.weights)):
+                self.decoder.weights[j] -= self.decoder.learning_rate * grad_decoder[j]
+
+    def generate(self, z=None):
+        if not np.any(z):
+            z = np.random.normal(0, 1, size=(1, self.latent_dim))
+        return self.decoder.predict(z)
+
+    def encode_decode(self, X):
+        return self._forwardstep(X)
