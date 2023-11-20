@@ -1,7 +1,10 @@
-from numpy.random import random
 from activation_functions import get_activation_function
 from dataset_loaders import load_font_data
-from optimization_methods import get_optimization_method, gradient_descent, adam, momentum
+from optimization_methods import (
+    gradient_descent,
+    adam,
+    momentum,
+)
 from autoencoder import standard_autoencoder
 from plots import plot_errors_per_architecture, plot_errors_per_optimization_method
 
@@ -11,7 +14,6 @@ import multiprocessing
 
 
 def architecture_test():
-
     architectures = [
         ([30, 25, 20, 15, 10, 5], "30-25-20-15-10-5"),
         ([25, 15, 5], "25-15-5"),
@@ -38,7 +40,9 @@ def architecture_test():
     beta1 = 0.9
     beta2 = 0.999
     epsilon = 1e-8
-    optimization_method = lambda weight_delta, state: adam(weight_delta, learning_rate, beta1, beta2, epsilon, state)
+    optimization_method = lambda weight_delta, state: adam(
+        weight_delta, learning_rate, beta1, beta2, epsilon, state
+    )
 
     mean_errors_per_architecture = {}
 
@@ -67,7 +71,7 @@ def architecture_test():
                     ),
                 )
             )
-        
+
         # Start threads
         for process in processes:
             process.start()
@@ -82,10 +86,11 @@ def architecture_test():
         mean_errors_per_architecture[name] = (mean_error, std_error)
 
     plot_errors_per_architecture(mean_errors_per_architecture)
-    
+
     # Serialize errors
     with open("errors_architecture.json", "w") as f:
         json.dump(mean_errors_per_architecture, f)
+
 
 def optimization_method_test():
     architecture = [30, 25, 20, 15, 10, 5]
@@ -106,15 +111,21 @@ def optimization_method_test():
     )
 
     learning_rate = 0.01
-    gradient_descent_optimizer= lambda weight_delta, _: gradient_descent(weight_delta, learning_rate)
+    gradient_descent_optimizer = lambda weight_delta, _: gradient_descent(
+        weight_delta, learning_rate
+    )
 
     beta1 = 0.9
     beta2 = 0.999
     epsilon = 1e-8
-    adam_optimizer = lambda weight_delta, state: adam(weight_delta, learning_rate, beta1, beta2, epsilon, state)
+    adam_optimizer = lambda weight_delta, state: adam(
+        weight_delta, learning_rate, beta1, beta2, epsilon, state
+    )
 
     momentum_constant = 0.9
-    momentum_optimizer = lambda weight_delta, state: momentum(weight_delta, learning_rate, momentum_constant)
+    momentum_optimizer = lambda weight_delta, state: momentum(
+        weight_delta, learning_rate, momentum_constant
+    )
 
     optimization_methods = [
         (gradient_descent_optimizer, "Gradient Descent"),
@@ -149,7 +160,7 @@ def optimization_method_test():
                     ),
                 )
             )
-        
+
         # Start threads
         for process in processes:
             process.start()
@@ -170,12 +181,18 @@ def optimization_method_test():
         json.dump(mean_errors_per_optimization_method, f)
 
 
-
-
-
-
-def train_and_calculate_error(architecture, data, latent_space_size, target_error, epochs, batch_size, activation_function, activation_function_derivative, optimization_method, errors_list):
-    
+def train_and_calculate_error(
+    architecture,
+    data,
+    latent_space_size,
+    target_error,
+    epochs,
+    batch_size,
+    activation_function,
+    activation_function_derivative,
+    optimization_method,
+    errors_list,
+):
     # Get a random seed for the process
     pid = multiprocessing.current_process().pid
     np.random.seed(pid)
@@ -195,7 +212,7 @@ def train_and_calculate_error(architecture, data, latent_space_size, target_erro
     best_error = min(errors_per_epoch)
 
     errors_list.append(best_error)
-    
+
 
 if __name__ == "__main__":
     optimization_method_test()
