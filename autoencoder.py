@@ -49,7 +49,7 @@ def denoising_autoencoder(
         neuron_activation_function_derivative: ActivationFunction,
         optimization_method: OptimizationMethod,
         noise_probability: float,
-) -> Tuple[List[NDArray], List[float]]:
+) -> Tuple[List[NDArray], List[float], NDArray]:
     mlp_hidden_layer_sizes = (
             hidden_layer_sizes + [latent_layer_size] + hidden_layer_sizes[::-1]
     )
