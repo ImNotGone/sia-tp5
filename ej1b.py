@@ -1,7 +1,7 @@
 from dataset_loaders import load_font_data
 from activation_functions import get_activation_function
 from autoencoder import denoising_autoencoder
-from multilayer_perceptron import forward_propagation
+from multilayer_perceptron import forward_propagation, predict
 from utils import (
     create_image,
     deserialize_weights,
@@ -49,7 +49,7 @@ def main():
         if config["load_weights"]:
             weights = deserialize_weights(config["weights_file"])
         else:
-            weights, errors_per_epoch, noisy_data = denoising_autoencoder(
+            weights, errors_per_epoch, training_data = denoising_autoencoder(
                 data,
                 hidden_layer_sizes,
                 latent_space_size,
@@ -61,23 +61,47 @@ def main():
                 optimization_method,
                 noise_probability_training,
             )
-        testing_data=flipping_noise(data, noise_probability_testing)
+
+        original_data = data
+        testing_data = flipping_noise(data, noise_probability_testing)
+
         original_fonts = data.reshape((-1, 7, 5))
-        original_noisy_fonts= noisy_data.reshape((-1, 7, 5))
-        testing_fonts=testing_data.reshape((-1, 7, 5))
-        reconstructed_fonts = []
-        for sample in testing_data:
-            reconstructed_sample = forward_propagation(
-                sample, weights, activation_function
-            )[0][-1]
-            reconstructed_font = reconstructed_sample.reshape((7, 5))
-            reconstructed_fonts.append(reconstructed_font)
+        training_fonts = training_data.reshape((-1, 7, 5))
+        testing_fonts = testing_data.reshape((-1, 7, 5))
 
         create_image(original_fonts, "original.png", (7, 5))
-        create_image(original_noisy_fonts, "original noisy.png", (7, 5))
-        create_image(testing_fonts, "testing fonts.png", (7, 5))
-        create_image(reconstructed_fonts, "reconstructed.png", (7, 5))
+        create_image(training_fonts, "training.png", (7, 5))
+        create_image(testing_fonts, "testing.png", (7, 5))
 
+        reconstructed_with_original_fonts = []
+        reconstructed_with_training_fonts = []
+        reconstructed_with_testing_fonts = []
+
+
+        for original_sample, training_sample, testing_sample in zip(original_data, training_data, testing_data):
+            reconstructed_with_original_sample = predict(
+                original_sample, weights, activation_function
+            )
+            reconstructed_with_training_sample = predict(
+                training_sample, weights, activation_function
+            )
+            reconstructed_with_testing_sample = predict(
+                testing_sample, weights, activation_function
+            )
+
+            reconstructed_with_original_font = reconstructed_with_original_sample.reshape((7, 5))
+            reconstructed_with_training_font = reconstructed_with_training_sample.reshape((7, 5))
+            reconstructed_with_testing_font = reconstructed_with_testing_sample.reshape((7, 5))
+
+            reconstructed_with_original_fonts.append(reconstructed_with_original_font)
+            reconstructed_with_training_fonts.append(reconstructed_with_training_font)
+            reconstructed_with_testing_fonts.append(reconstructed_with_testing_font)
+
+        create_image(reconstructed_with_original_fonts, "reconstructed_with_original.png", (7, 5))
+        create_image(reconstructed_with_training_fonts, "reconstructed_with_training.png", (7, 5))
+        create_image(reconstructed_with_testing_fonts, "reconstructed_with_testing.png", (7, 5))
+
+    
         if config["save_weights"]:
             serialize_weights(weights, config["weights_file"])
 
