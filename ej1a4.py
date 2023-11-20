@@ -3,6 +3,7 @@ from activation_functions import get_activation_function
 from autoencoder import standard_autoencoder
 from multilayer_perceptron import forward_propagation, get_hidden, predict
 import matplotlib.pyplot as plt
+import math
 from utils import (
     create_image,
     deserialize_weights,
@@ -65,7 +66,7 @@ def main():
             )
 
 
-        new_weights=weights[5:]
+        new_weights=weights[math.ceil(len(weights)/2):]
         
         original_fonts = data.reshape((-1, 7, 5))
         reconstructed_fonts = []
@@ -77,7 +78,7 @@ def main():
             )[0][-1]
             
             #OJO poner en vez de 5 la que vendria a ser capa latente (este caso es input(0) + 4 ocultas(1-4)=5)
-            data2d.append([get_hidden(sample,weights,activation_function,5),font[i]])
+            data2d.append([get_hidden(sample,weights,activation_function,math.ceil(len(weights)/2)),font[i]])
             i+=1
             
         print(data2d)
@@ -91,8 +92,8 @@ def main():
             labels.append(item[1])       # Agrega la lista de números como labels
             
 
-        x1,y1= x_values[30], y_values[30]
-        x2,y2= x_values[26], y_values[26]
+        x1,y1= x_values[4], y_values[4]
+        x2,y2= x_values[10], y_values[10]
         
         #cuantas letras intermedias
         n=5

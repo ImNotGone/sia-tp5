@@ -3,6 +3,7 @@ from activation_functions import get_activation_function
 from autoencoder import standard_autoencoder
 from multilayer_perceptron import forward_propagation, get_hidden
 import matplotlib.pyplot as plt
+import math 
 from utils import (
     create_image,
     deserialize_weights,
@@ -66,6 +67,7 @@ def main():
         reconstructed_fonts = []
         data2d =[]
         i=0
+        #print(len(weights))
         for sample in data:
             reconstructed_sample = forward_propagation(
                 sample, weights, activation_function
@@ -73,13 +75,13 @@ def main():
             reconstructed_font = reconstructed_sample.reshape((7, 5))
             reconstructed_fonts.append(reconstructed_font)
             #OJO poner en vez de 5 la que vendria a ser capa latente (este caso es input(0) + 4 ocultas(1-4)=5)
-            data2d.append([get_hidden(sample,weights,activation_function,5),font[i]])
+            data2d.append([get_hidden(sample,weights,activation_function, math.ceil(len(weights)/2)),font[i]])
             i+=1
 
         x_values = []
         y_values = []
         labels = []
-
+        #print(data2d)
         for item in data2d:
             x_values.append(item[0][0])  # Agrega la primera coordenada x
             y_values.append(item[0][1])  # Agrega la primera coordenada y
