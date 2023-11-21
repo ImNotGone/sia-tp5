@@ -6,12 +6,12 @@ def plot_errors_per_epoch(errors_per_epoch: List[float]):
     plt.xlabel("Epochs")
     plt.ylabel("Error")
 
-    plt.yticks([i for i in range(0, 100, 10)])
+    plt.yticks([i for i in range(0, 150, 10)])
 
     x_ticks = [i for i in range(0, len(errors_per_epoch), 10000)]
 
     # Zoom in
-    plt.ylim(0, 100)
+    plt.ylim(0, 150)
 
     plt.savefig("errors_per_epoch.png")
 

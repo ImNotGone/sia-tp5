@@ -213,6 +213,8 @@ class VAE:
     def learn(self, X):
         X_batch = X
 
+        loss_per_epoch = []
+
         for i in range(self.iter):
             if self.batch_size > 0 and self.batch_size < X.shape[0]:
                 k = np.random.choice(range(X.shape[0]), self.batch_size, replace=False)
@@ -221,11 +223,22 @@ class VAE:
             X_hat = self._forwardstep(X_batch)
             grad_encoder, grad_decoder = self._backwardstep(X_batch, X_hat)
 
+            loss = self.decoder.loss(X_batch, X_hat)[0]
+            kl_loss = np.mean(self._kl_divergence_loss() ** 2)
+
+            loss_per_epoch.append(loss + kl_loss)
+           
+            # Print each 1%
+            if i % (self.iter // 100) == 0:
+                print(f"Epoch {i} of {self.iter} - Loss: {loss_per_epoch[-1]}")
+
             for j in range(len(self.encoder.weights)):
                 self.encoder.weights[j] -= self.encoder.learning_rate * grad_encoder[j]
 
             for j in range(len(self.decoder.weights)):
                 self.decoder.weights[j] -= self.decoder.learning_rate * grad_decoder[j]
+
+        return loss_per_epoch
 
     def generate(self, z=None):
         if not np.any(z):
