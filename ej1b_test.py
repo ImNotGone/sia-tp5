@@ -88,6 +88,7 @@ def architecture_test():
     with open("errors_architecture.json", "w") as f:
         json.dump(mean_errors_per_architecture, f)
 
+
 def train_and_calculate_error(
     architecture,
     data,
@@ -115,7 +116,7 @@ def train_and_calculate_error(
         activation_function,
         activation_function_derivative,
         optimization_method,
-        noise_probability
+        noise_probability,
     )
 
     best_error = min(errors_per_epoch)

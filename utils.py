@@ -3,6 +3,7 @@ import json
 import numpy as np
 from PIL import Image
 
+
 def get_batch_size(config: Dict[str, Any], data_size: int) -> int:
     strategy = config["training_strategy"]
 
@@ -31,6 +32,7 @@ def pretty_print_font(bitmap):
                 print("█", end="")
         print()
 
+
 def create_image(fonts, path, size=(7, 5)):
     # Add a border around each font, 1 pixel wide
     fonts = np.pad(fonts, ((0, 0), (1, 1), (1, 1)), "constant", constant_values=0)
@@ -40,7 +42,7 @@ def create_image(fonts, path, size=(7, 5)):
     composite_width = cols * bitmap_width
     composite_height = rows * bitmap_height
 
-    composite_image = Image.new('L', (composite_width, composite_height))
+    composite_image = Image.new("L", (composite_width, composite_height))
 
     for i, font in enumerate(fonts):
         font_image = Image.fromarray(font * 255)
@@ -51,12 +53,13 @@ def create_image(fonts, path, size=(7, 5)):
     # Add a border around each image
 
     # Scale the image up
-    composite_image = composite_image.resize((composite_width * 10, composite_height * 10))
+    composite_image = composite_image.resize(
+        (composite_width * 10, composite_height * 10)
+    )
 
     composite_image.save(path)
     composite_image.show()
-   
-    
+
 
 def serialize_weights(weights, path="weights.json"):
     # Convert the weights to a list of lists

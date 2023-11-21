@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
+
 def plot_errors_per_epoch(errors_per_epoch: List[float]):
     plt.plot(errors_per_epoch)
     plt.xlabel("Epochs")
@@ -33,10 +34,11 @@ def plot_errors_per_epoch(errors_per_epoch: List[float]):
     plt.savefig("errors_per_epoch_zoom.png")
 
 
-def plot_errors_per_architecture(errors_per_architecture: dict[str, Tuple[float, float]]):
-
-    means = [ error[0] for error in errors_per_architecture.values() ]
-    stds = [ error[1] for error in errors_per_architecture.values() ]
+def plot_errors_per_architecture(
+    errors_per_architecture: dict[str, Tuple[float, float]]
+):
+    means = [error[0] for error in errors_per_architecture.values()]
+    stds = [error[1] for error in errors_per_architecture.values()]
 
     plt.bar(
         [i + 1 for i in range(len(errors_per_architecture))],
@@ -60,10 +62,12 @@ def plot_errors_per_architecture(errors_per_architecture: dict[str, Tuple[float,
     plt.savefig("errors_per_architecture.png")
     plt.figure()
 
-def plot_errors_per_optimization_method(errors_per_optimization_method: dict[str, Tuple[float, float]]):
 
-    means = [ error[0] for error in errors_per_optimization_method.values() ]
-    stds = [ error[1] for error in errors_per_optimization_method.values() ]
+def plot_errors_per_optimization_method(
+    errors_per_optimization_method: dict[str, Tuple[float, float]]
+):
+    means = [error[0] for error in errors_per_optimization_method.values()]
+    stds = [error[1] for error in errors_per_optimization_method.values()]
 
     plt.bar(
         [i + 1 for i in range(len(errors_per_optimization_method))],
@@ -73,7 +77,7 @@ def plot_errors_per_optimization_method(errors_per_optimization_method: dict[str
     )
 
     names = list(errors_per_optimization_method.keys())
-    
+
     plt.xticks(
         [i + 1 for i in range(len(errors_per_optimization_method))],
         names,

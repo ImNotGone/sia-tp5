@@ -5,22 +5,22 @@ from numpy._typing import NDArray
 from activation_functions import ActivationFunction
 from multilayer_perceptron import multilayer_perceptron
 from optimization_methods import OptimizationMethod
-from vae_loss_functions import (identity, squared_error)
+from vae_loss_functions import identity, squared_error
 
 
 def standard_autoencoder(
-        data: NDArray,
-        hidden_layer_sizes: List[int],
-        latent_layer_size: int,
-        target_error: float,
-        max_epochs: int,
-        batch_size: int,
-        neuron_activation_function: ActivationFunction,
-        neuron_activation_function_derivative: ActivationFunction,
-        optimization_method: OptimizationMethod,
+    data: NDArray,
+    hidden_layer_sizes: List[int],
+    latent_layer_size: int,
+    target_error: float,
+    max_epochs: int,
+    batch_size: int,
+    neuron_activation_function: ActivationFunction,
+    neuron_activation_function_derivative: ActivationFunction,
+    optimization_method: OptimizationMethod,
 ) -> Tuple[List[NDArray], List[float]]:
     mlp_hidden_layer_sizes = (
-            hidden_layer_sizes + [latent_layer_size] + hidden_layer_sizes[::-1]
+        hidden_layer_sizes + [latent_layer_size] + hidden_layer_sizes[::-1]
     )
     mlp_data = [(data[i], data[i]) for i in range(data.shape[0])]
     mlp_output_layer_size = data.shape[1]
@@ -39,19 +39,19 @@ def standard_autoencoder(
 
 
 def denoising_autoencoder(
-        data: NDArray,
-        hidden_layer_sizes: List[int],
-        latent_layer_size: int,
-        target_error: float,
-        max_epochs: int,
-        batch_size: int,
-        neuron_activation_function: ActivationFunction,
-        neuron_activation_function_derivative: ActivationFunction,
-        optimization_method: OptimizationMethod,
-        noise_probability: float,
+    data: NDArray,
+    hidden_layer_sizes: List[int],
+    latent_layer_size: int,
+    target_error: float,
+    max_epochs: int,
+    batch_size: int,
+    neuron_activation_function: ActivationFunction,
+    neuron_activation_function_derivative: ActivationFunction,
+    optimization_method: OptimizationMethod,
+    noise_probability: float,
 ) -> Tuple[List[NDArray], List[float], NDArray]:
     mlp_hidden_layer_sizes = (
-            hidden_layer_sizes + [latent_layer_size] + hidden_layer_sizes[::-1]
+        hidden_layer_sizes + [latent_layer_size] + hidden_layer_sizes[::-1]
     )
     mlp_output_layer_size = data.shape[1]
 
@@ -79,14 +79,17 @@ def denoising_autoencoder(
 
 
 class Network:
-    def __init__(self, dimensions, learning_rate, max_epochs, batch_size, loss_func, act_func):
-        '''intializes weights matrix and parameters'''
+    def __init__(
+        self, dimensions, learning_rate, max_epochs, batch_size, loss_func, act_func
+    ):
+        """intializes weights matrix and parameters"""
 
         # initialize weights of network
         self.weights = {}
         for i in range(len(dimensions) - 1):
-            self.weights[i] = np.random.uniform(-0.1, 0.1,
-                                                (dimensions[i], dimensions[i + 1]))
+            self.weights[i] = np.random.uniform(
+                -0.1, 0.1, (dimensions[i], dimensions[i + 1])
+            )
 
         # hyperparameters
         self.learning_rate = learning_rate
@@ -98,17 +101,17 @@ class Network:
         self.loss = loss_func
 
     def _feedforward(self, X):
-        '''feedforward update step'''
+        """feedforward update step"""
         self._z = {}
         self._z_act = {0: X}
 
         for i in range(len(self.weights)):
             self._z[i] = self._z_act[i] @ self.weights[i]
-            self._z_act[i+1] = self.activation(self._z[i])[0]
-        return self._z_act[i+1]
+            self._z_act[i + 1] = self.activation(self._z[i])[0]
+        return self._z_act[i + 1]
 
     def _backprop(self, X, y, yhat):
-        '''back-propagation algorithm'''
+        """back-propagation algorithm"""
         n = len(self.weights)
         delta = -1 * self.loss(y, yhat)[1] * self.activation(self._z[n - 1])[1]
         grad_weights = {n - 1: self._z_act[n - 1].T @ delta}
@@ -120,7 +123,7 @@ class Network:
         return grad_weights
 
     def train(self, X, y):
-        '''trains model using stochastic gradient descent'''
+        """trains model using stochastic gradient descent"""
         X_batch = X
         y_batch = y
 
@@ -137,7 +140,7 @@ class Network:
                 self.weights[j] -= self.learning_rate * grad_weights[j]
 
     def predict(self, X):
-        '''predicts on trained model'''
+        """predicts on trained model"""
         z_act = X
         for i in range(len(self.weights)):
             z = z_act @ self.weights[i]
@@ -146,11 +149,33 @@ class Network:
 
 
 class VAE:
-    def __init__(self, dimensions, latent_dim, learning_rate, max_epochs, batch_size, loss_func, act_func):
-
+    def __init__(
+        self,
+        dimensions,
+        latent_dim,
+        learning_rate,
+        max_epochs,
+        batch_size,
+        loss_func,
+        act_func,
+    ):
         self.latent_dim = latent_dim
-        self.encoder = Network(dimensions[0] + [2], learning_rate, max_epochs, batch_size, loss_func, act_func)
-        self.decoder = Network([latent_dim] + dimensions[1], learning_rate, max_epochs, batch_size, loss_func, act_func)
+        self.encoder = Network(
+            dimensions[0] + [2],
+            learning_rate,
+            max_epochs,
+            batch_size,
+            loss_func,
+            act_func,
+        )
+        self.decoder = Network(
+            [latent_dim] + dimensions[1],
+            learning_rate,
+            max_epochs,
+            batch_size,
+            loss_func,
+            act_func,
+        )
 
         for i in range(len(self.encoder.weights)):
             self.encoder.weights[i] = np.abs(self.encoder.weights[i])
@@ -187,11 +212,19 @@ class VAE:
     def _backwardstep(self, X, X_hat):
         # propagate reconstuction error through decoder
         n = len(self.decoder.weights)
-        delta = -1 * self.decoder.loss(X, X_hat)[1] * self.activation(self.decoder._z[n - 1])[1]
+        delta = (
+            -1
+            * self.decoder.loss(X, X_hat)[1]
+            * self.activation(self.decoder._z[n - 1])[1]
+        )
         decoder_weights = {n - 1: self.decoder._z_act[n - 1].T @ delta}
 
         for i in reversed(range(len(self.decoder.weights) - 1)):
-            delta = delta @ self.decoder.weights[i + 1].T * self.activation(self.decoder._z[i])[1]
+            delta = (
+                delta
+                @ self.decoder.weights[i + 1].T
+                * self.activation(self.decoder._z[i])[1]
+            )
             decoder_weights[i] = self.decoder._z_act[i].T @ delta
 
         # add kl-divergence loss
@@ -199,13 +232,21 @@ class VAE:
         kl_loss = self._kl_divergence_loss()
         kl_delta = kl_loss * self.activation(self.encoder._z[m - 1])[1]
 
-        delta = delta @ self.decoder.weights[0].T * self.activation(self.encoder._z[m - 1])[1]
+        delta = (
+            delta
+            @ self.decoder.weights[0].T
+            * self.activation(self.encoder._z[m - 1])[1]
+        )
         delta = delta + kl_delta
         encoder_weights = {m - 1: self.encoder._z_act[n - 1].T @ delta}
 
         # propagate kl error through encoder
         for i in reversed(range(len(self.decoder.weights) - 1)):
-            delta = delta @ self.encoder.weights[i + 1].T * self.activation(self.encoder._z[i])[1]
+            delta = (
+                delta
+                @ self.encoder.weights[i + 1].T
+                * self.activation(self.encoder._z[i])[1]
+            )
             encoder_weights[i] = self.encoder._z_act[i].T @ delta
 
         return encoder_weights, decoder_weights
@@ -227,7 +268,7 @@ class VAE:
             kl_loss = np.mean(self._kl_divergence_loss() ** 2)
 
             loss_per_epoch.append(loss + kl_loss)
-           
+
             # Print each 1%
             if i % (self.iter // 100) == 0:
                 print(f"Epoch {i} of {self.iter} - Loss: {loss_per_epoch[-1]}")

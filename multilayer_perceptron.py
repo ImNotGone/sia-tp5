@@ -229,11 +229,12 @@ def backpropagation(
 
     return hidden_layer_weight_deltas
 
+
 def get_hidden(
     input: NDArray,
     network: List[NDArray],
     neuron_activation_function: ActivationFunction,
-    layer_number: int
+    layer_number: int,
 ) -> NDArray:
     # Propagate the input through the network
     neuron_activations = []
@@ -242,7 +243,7 @@ def get_hidden(
     # Propagate the input through the network
     previous_layer_output = input
     for i in range(layer_number):
-        #print(len(network[i]))
+        # print(len(network[i]))
         # Calculate the neuron excitement
         # h^m = W^m * V^m-1 (MxN * Nx1 = Mx1)
         neuron_excitement = np.dot(network[i], previous_layer_output)
@@ -255,7 +256,7 @@ def get_hidden(
 
         # Set the previous layer output to the current layer activation
         previous_layer_output = neuron_activation
-        
+
     return neuron_activation
 
 

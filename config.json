@@ -1,28 +1,29 @@
 {
-        "activation": {
-            "function": "tanh",
-            "beta": 1
-        },
-        "optimization": {
-            "method": "adam",
-            "learning_rate": 0.01,
-            "momentum": 0.9,
-            "beta1":0.9,
-            "beta2":0.999,
-            "epsilon":1e-8
-        },
-        "hidden_layers": [35, 20 , 10],
-        "latent_space_size": 2,
-        "target_error": 0.001,
-        "max_epochs": 100000,
-    
-        "training_strategy": "batch",
-        "batch_size": 10,
-
-        "noise_probability_training": 0.01,
-        "noise_probability_testing": 0.01,
-
-        "load_weights": false,
-        "save_weights": true,
-        "weights_file": "weights.json"
-    }
+  "activation": {
+    "function": "tanh",
+    "beta": 1
+  },
+  "optimization": {
+    "method": "adam",
+    "learning_rate": 0.01,
+    "momentum": 0.9,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "epsilon": 1E-8
+  },
+  "hidden_layers": [
+    35,
+    20,
+    10
+  ],
+  "latent_space_size": 2,
+  "target_error": 0.001,
+  "max_epochs": 100000,
+  "training_strategy": "batch",
+  "batch_size": 10,
+  "noise_probability_training": 0.01,
+  "noise_probability_testing": 0.01,
+  "load_weights": false,
+  "save_weights": true,
+  "weights_file": "weights.json"
+}

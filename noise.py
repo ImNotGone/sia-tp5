@@ -1,6 +1,7 @@
 from numpy._typing import NDArray
 import numpy as np
 
+
 def flipping_noise(data: NDArray, noise_probability: float):
     noisy_data = data.copy()
     for sample in noisy_data:

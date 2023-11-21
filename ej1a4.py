@@ -19,11 +19,39 @@ from optimization_methods import get_optimization_method
 
 def main():
     font = [
-    '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-    'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-    'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-    'x', 'y', 'z', '{', '|', '}', '~', 'del'
-]
+        "`",
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "o",
+        "p",
+        "q",
+        "r",
+        "s",
+        "t",
+        "u",
+        "v",
+        "w",
+        "x",
+        "y",
+        "z",
+        "{",
+        "|",
+        "}",
+        "~",
+        "del",
+    ]
     data = load_font_data()
 
     # Flatten the matrix into a vector
@@ -65,22 +93,31 @@ def main():
                 optimization_method,
             )
 
+        new_weights = weights[math.ceil(len(weights) / 2) :]
 
-        new_weights=weights[math.ceil(len(weights)/2):]
-        
         original_fonts = data.reshape((-1, 7, 5))
         reconstructed_fonts = []
-        data2d =[]
-        i=0
+        data2d = []
+        i = 0
         for sample in data:
             reconstructed_sample = forward_propagation(
                 sample, weights, activation_function
             )[0][-1]
-            
-            #OJO poner en vez de 5 la que vendria a ser capa latente (este caso es input(0) + 4 ocultas(1-4)=5)
-            data2d.append([get_hidden(sample,weights,activation_function,math.ceil(len(weights)/2)),font[i]])
-            i+=1
-            
+
+            # OJO poner en vez de 5 la que vendria a ser capa latente (este caso es input(0) + 4 ocultas(1-4)=5)
+            data2d.append(
+                [
+                    get_hidden(
+                        sample,
+                        weights,
+                        activation_function,
+                        math.ceil(len(weights) / 2),
+                    ),
+                    font[i],
+                ]
+            )
+            i += 1
+
         print(data2d)
         x_values = []
         y_values = []
@@ -89,26 +126,25 @@ def main():
         for item in data2d:
             x_values.append(item[0][0])  # Agrega la primera coordenada x
             y_values.append(item[0][1])  # Agrega la primera coordenada y
-            labels.append(item[1])       # Agrega la lista de números como labels
-            
+            labels.append(item[1])  # Agrega la lista de números como labels
 
-        x1,y1= x_values[4], y_values[4]
-        x2,y2= x_values[10], y_values[10]
-        
-        #cuantas letras intermedias
-        n=5
-        newx=x1
-        newy=y1
-        for i in range(n+1):
-            print(newx,newy)
+        x1, y1 = x_values[4], y_values[4]
+        x2, y2 = x_values[10], y_values[10]
+
+        # cuantas letras intermedias
+        n = 5
+        newx = x1
+        newy = y1
+        for i in range(n + 1):
+            print(newx, newy)
             new_letters = forward_propagation(
-                [newx,newy], new_weights,activation_function
+                [newx, newy], new_weights, activation_function
             )[0][-1]
             reconstructed_font = new_letters.reshape((7, 5))
             reconstructed_fonts.append(reconstructed_font)
-            newx=newx+(x2-x1)/n
-            newy=newy+(y2-y1)/n
-            
+            newx = newx + (x2 - x1) / n
+            newy = newy + (y2 - y1) / n
+
         create_image(reconstructed_fonts, "newletters.png", (1, 6))
         if config["save_weights"]:
             serialize_weights(weights, config["weights_file"])

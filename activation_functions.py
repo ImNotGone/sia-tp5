@@ -68,6 +68,7 @@ def relu(x: NDArray) -> NDArray:
 def relu_derivative(x: NDArray) -> NDArray:
     return np.where(x > 0, 1, 0)
 
+
 def relu_normalize(x: NDArray | float) -> NDArray | float:
     if isinstance(x, float):
         return x / abs(x)
@@ -96,7 +97,7 @@ def get_activation_function(
             tanh_normalize,
         )
     elif activation_function == "relu":
-         return relu, relu_derivative, relu_normalize
+        return relu, relu_derivative, relu_normalize
     elif activation_function == "identity":
         return identity, identity_derivative, identity_normalize
     else:

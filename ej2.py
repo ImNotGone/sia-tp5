@@ -2,8 +2,8 @@ import json
 
 import numpy as np
 
-from dataset_loaders import (load_emoji_data, load_font_data)
-from vae_activations import (relu, sigmoid, tanh, identity, selu)
+from dataset_loaders import load_emoji_data, load_font_data
+from vae_activations import relu, sigmoid, tanh, identity, selu
 from autoencoder import VAE
 
 from optimization_methods import get_optimization_method
@@ -52,7 +52,7 @@ def main():
             max_epochs,
             batch_size,
             loss_func,
-            act_func
+            act_func,
         )
 
         errors_per_epoch = vae.learn(data)
@@ -60,7 +60,7 @@ def main():
         reconstructed_fonts = []
         original_fonts = []
         for emoji in data:
-            reconstructed_sample = vae.encode_decode(emoji[None,:])
+            reconstructed_sample = vae.encode_decode(emoji[None, :])
             reconstructed_font = reconstructed_sample.reshape((7, 5))
             reconstructed_fonts.append(reconstructed_font)
             original_fonts.append(emoji.reshape((7, 5)))
@@ -73,4 +73,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
