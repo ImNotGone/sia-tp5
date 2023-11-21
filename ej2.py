@@ -28,11 +28,6 @@ def main():
     # Flatten the matrix into a vector
     data = data.reshape((data.shape[0], -1))
 
-    with gzip.open('mnist.pkl.gz', 'rb') as f:
-        train, test, val = pickle.load(f, encoding='latin1')
-        mnist_train = train[0]
-        mnist_test = test[0]
-
     with open("config.json", "r") as f:
         config = json.load(f)
 
