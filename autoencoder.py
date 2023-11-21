@@ -5,7 +5,7 @@ from numpy._typing import NDArray
 from activation_functions import ActivationFunction
 from multilayer_perceptron import multilayer_perceptron
 from optimization_methods import OptimizationMethod
-from loss_functions import (identity, squared_error)
+from vae_loss_functions import (identity, squared_error)
 
 
 def standard_autoencoder(
@@ -104,9 +104,8 @@ class Network:
 
         for i in range(len(self.weights)):
             self._z[i] = self._z_act[i] @ self.weights[i]
-            self._z_act[i + 1] = self.activation(self._z[i])[0]
-
-        return self._z_act[i + 1]
+            self._z_act[i+1] = self.activation(self._z[i])[0]
+        return self._z_act[i+1]
 
     def _backprop(self, X, y, yhat):
         '''back-propagation algorithm'''
