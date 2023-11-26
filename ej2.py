@@ -3,8 +3,8 @@ import json
 import numpy as np
 
 from src.dataset_loaders import load_emoji_data, load_font_data
-from src.vae_activations import relu, sigmoid, tanh, identity, selu
-from src.autoencoder import VAE
+from src.vae.vae_activations import relu, sigmoid, tanh, identity, selu
+from src.vae.vae import VAE
 
 from src.optimization_methods import get_optimization_method
 
@@ -17,7 +17,7 @@ from src.utils import (
 
 from src.plots import plot_errors_per_epoch
 
-from src.vae_loss_functions import squared_error
+from src.vae.vae_loss_functions import squared_error
 
 import pickle, gzip
 
