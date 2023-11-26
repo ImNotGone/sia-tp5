@@ -5,16 +5,9 @@ import random
 import copy
 import signal
 
-from activation_functions import ActivationFunction
-from optimization_methods import OptimizationMethod
-
-stop = False
-
-
-def signal_handler(sig, frame):
-    global stop
-    stop = True
-    print("Stopping...")
+from src.activation_functions import ActivationFunction
+from src.optimization_methods import OptimizationMethod
+from src.utils import signal_handler, stop
 
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -106,7 +99,7 @@ def multilayer_perceptron(
 
         epoch += 1
 
-        if stop:
+        if stop():
             break
 
     return best_network, errors_in_epoch

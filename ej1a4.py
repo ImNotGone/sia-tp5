@@ -1,20 +1,18 @@
-from dataset_loaders import load_font_data
-from activation_functions import get_activation_function
-from autoencoder import standard_autoencoder
-from multilayer_perceptron import forward_propagation, get_hidden, predict
-import matplotlib.pyplot as plt
+from src.dataset_loaders import load_font_data
+from src.activation_functions import get_activation_function
+from src.optimization_methods import get_optimization_method
+from src.autoencoder import standard_autoencoder
+from src.multilayer_perceptron import forward_propagation, get_hidden
 import math
-from utils import (
+from src.utils import (
     create_image,
     deserialize_weights,
-    pretty_print_font,
     get_batch_size,
     serialize_weights,
 )
 
 import json
 
-from optimization_methods import get_optimization_method
 
 
 def main():

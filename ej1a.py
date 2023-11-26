@@ -1,20 +1,17 @@
-from numpy import e
-from dataset_loaders import load_font_data
-from activation_functions import get_activation_function
-from autoencoder import standard_autoencoder
-from multilayer_perceptron import forward_propagation
-from plots import plot_errors_per_epoch
-from utils import (
+from src.dataset_loaders import load_font_data
+from src.activation_functions import get_activation_function
+from src.optimization_methods import get_optimization_method
+from src.autoencoder import standard_autoencoder
+from src.multilayer_perceptron import forward_propagation
+from src.plots import plot_errors_per_epoch
+from src.utils import (
     create_image,
     deserialize_weights,
-    pretty_print_font,
     get_batch_size,
     serialize_weights,
 )
 
 import json
-
-from optimization_methods import get_optimization_method
 
 
 def main():

@@ -1,8 +1,8 @@
-from activation_functions import get_activation_function
-from dataset_loaders import load_font_data
-from optimization_methods import adam
-from autoencoder import denoising_autoencoder
-from plots import plot_errors_per_architecture
+from src.activation_functions import get_activation_function
+from src.dataset_loaders import load_font_data
+from src.optimization_methods import adam
+from src.autoencoder import denoising_autoencoder
+from src.plots import plot_errors_per_architecture
 
 import numpy as np
 import json

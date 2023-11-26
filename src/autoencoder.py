@@ -2,10 +2,11 @@ from typing import List, Tuple
 
 import numpy as np
 from numpy._typing import NDArray
-from activation_functions import ActivationFunction
-from multilayer_perceptron import multilayer_perceptron
-from optimization_methods import OptimizationMethod
-from vae_loss_functions import identity, squared_error
+from src.activation_functions import ActivationFunction
+from src.multilayer_perceptron import multilayer_perceptron
+from src.optimization_methods import OptimizationMethod
+from src.vae_loss_functions import identity, squared_error
+from src.utils import stop
 
 
 def standard_autoencoder(
@@ -257,6 +258,9 @@ class VAE:
         loss_per_epoch = []
 
         for i in range(self.iter):
+            if stop():
+                break
+
             if self.batch_size > 0 and self.batch_size < X.shape[0]:
                 k = np.random.choice(range(X.shape[0]), self.batch_size, replace=False)
                 X_batch = X[k, :]

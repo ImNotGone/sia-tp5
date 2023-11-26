@@ -2,22 +2,22 @@ import json
 
 import numpy as np
 
-from dataset_loaders import load_emoji_data, load_font_data
-from vae_activations import relu, sigmoid, tanh, identity, selu
-from autoencoder import VAE
+from src.dataset_loaders import load_emoji_data, load_font_data
+from src.vae_activations import relu, sigmoid, tanh, identity, selu
+from src.autoencoder import VAE
 
-from optimization_methods import get_optimization_method
+from src.optimization_methods import get_optimization_method
 
-from utils import (
+from src.utils import (
     create_image,
     deserialize_weights,
     get_batch_size,
     serialize_weights,
 )
 
-from plots import plot_errors_per_epoch
+from src.plots import plot_errors_per_epoch
 
-from vae_loss_functions import squared_error
+from src.vae_loss_functions import squared_error
 
 import pickle, gzip
 

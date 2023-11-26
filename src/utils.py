@@ -78,3 +78,15 @@ def deserialize_weights(path="weights.json") -> List[np.ndarray]:
         weights = [np.array(layer) for layer in weights]
 
         return weights
+
+
+stop_flag = False
+def signal_handler(sig, frame):
+    global stop_flag
+    stop_flag = True
+    print("Stopping...")
+
+def stop():
+    global stop_flag
+    return stop_flag
+

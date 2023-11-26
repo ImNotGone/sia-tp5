@@ -1,19 +1,17 @@
-from dataset_loaders import load_font_data
-from activation_functions import get_activation_function
-from autoencoder import denoising_autoencoder
-from multilayer_perceptron import forward_propagation, predict
-from utils import (
+from src.dataset_loaders import load_font_data
+from src.activation_functions import get_activation_function
+from src.optimization_methods import get_optimization_method
+from src.autoencoder import denoising_autoencoder
+from src.multilayer_perceptron import predict
+from src.utils import (
     create_image,
     deserialize_weights,
-    pretty_print_font,
     get_batch_size,
     serialize_weights,
 )
-from noise import flipping_noise
+from src.noise import flipping_noise
 
 import json
-
-from optimization_methods import get_optimization_method
 
 
 def main():
@@ -32,7 +30,7 @@ def main():
         max_epochs = config["max_epochs"]
 
         noise_probability_training = config["noise_probability_training"]
-        noise_probability_testing= config["noise_probability_testing"]
+        noise_probability_testing = config["noise_probability_testing"]
 
         batch_size = get_batch_size(config, data.shape[0])
 
@@ -77,8 +75,9 @@ def main():
         reconstructed_with_training_fonts = []
         reconstructed_with_testing_fonts = []
 
-
-        for original_sample, training_sample, testing_sample in zip(original_data, training_data, testing_data):
+        for original_sample, training_sample, testing_sample in zip(
+            original_data, training_data, testing_data
+        ):
             reconstructed_with_original_sample = predict(
                 original_sample, weights, activation_function
             )
@@ -89,19 +88,30 @@ def main():
                 testing_sample, weights, activation_function
             )
 
-            reconstructed_with_original_font = reconstructed_with_original_sample.reshape((7, 5))
-            reconstructed_with_training_font = reconstructed_with_training_sample.reshape((7, 5))
-            reconstructed_with_testing_font = reconstructed_with_testing_sample.reshape((7, 5))
+            reconstructed_with_original_font = (
+                reconstructed_with_original_sample.reshape((7, 5))
+            )
+            reconstructed_with_training_font = (
+                reconstructed_with_training_sample.reshape((7, 5))
+            )
+            reconstructed_with_testing_font = reconstructed_with_testing_sample.reshape(
+                (7, 5)
+            )
 
             reconstructed_with_original_fonts.append(reconstructed_with_original_font)
             reconstructed_with_training_fonts.append(reconstructed_with_training_font)
             reconstructed_with_testing_fonts.append(reconstructed_with_testing_font)
 
-        create_image(reconstructed_with_original_fonts, "reconstructed_with_original.png", (7, 5))
-        create_image(reconstructed_with_training_fonts, "reconstructed_with_training.png", (7, 5))
-        create_image(reconstructed_with_testing_fonts, "reconstructed_with_testing.png", (7, 5))
+        create_image(
+            reconstructed_with_original_fonts, "reconstructed_with_original.png", (7, 5)
+        )
+        create_image(
+            reconstructed_with_training_fonts, "reconstructed_with_training.png", (7, 5)
+        )
+        create_image(
+            reconstructed_with_testing_fonts, "reconstructed_with_testing.png", (7, 5)
+        )
 
-    
         if config["save_weights"]:
             serialize_weights(weights, config["weights_file"])
 
