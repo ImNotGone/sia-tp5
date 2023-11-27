@@ -37,6 +37,9 @@ def create_image(fonts, path, size=(7, 5)):
     # Add a border around each font, 1 pixel wide
     fonts = np.pad(fonts, ((0, 0), (1, 1), (1, 1)), "constant", constant_values=0)
 
+    # Scale the fonts up
+    fonts = fonts.repeat(10, axis=1).repeat(10, axis=2)
+
     bitmap_height, bitmap_width = len(fonts[0]), len(fonts[0][0])
     cols, rows = size
     composite_width = cols * bitmap_width
@@ -51,11 +54,6 @@ def create_image(fonts, path, size=(7, 5)):
         composite_image.paste(font_image, (x * bitmap_width, y * bitmap_height))
 
     # Add a border around each image
-
-    # Scale the image up
-    composite_image = composite_image.resize(
-        (composite_width * 10, composite_height * 10)
-    )
 
     composite_image.save(path)
     composite_image.show()

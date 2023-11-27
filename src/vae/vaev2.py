@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 from src.multilayer_perceptron import NeuronLayer
 from src.utils import stop
@@ -226,6 +227,8 @@ class VAE:
         self.r_loss = []
         self.total_loss = []
 
+        best_weights = None
+
         while i < limit:
 
             if stop():
@@ -236,11 +239,18 @@ class VAE:
             iteration_error = []
             iteration_kl = []
             iteration_r = []
+
+            deltas = []
             for elem in train_data:
                 result = self.forward_propagation(elem)
                 delta_w = self.backward_propagation(elem, result)
-                self.update_all_weights(delta_w)
 
+                if len(deltas) == 0:
+                    deltas = delta_w
+                else:
+                    for idx in range(len(deltas)):
+                        deltas[idx] += delta_w[idx]
+                
 
                 kl_loss = kl(self.layers[self.latent_idx].mean, self.layers[self.latent_idx].std)
                 r_loss = reconstruction_loss(result, elem)
@@ -260,10 +270,17 @@ class VAE:
             self.kl_loss.append(kl_loss)
             self.r_loss.append(r_loss)
 
+            # Mean of all deltas
+            weight_delta = [delta / len(train_data) for delta in deltas]
+
+            self.update_all_weights(weight_delta)
+            
+
             if error < min_error:
                 min_error = error
                 min_kl = kl_loss
                 min_r = r_loss
+                best_weights = self.layers.copy()
 
             # Each 5%
             if i % (limit / 20) == 0:
@@ -271,6 +288,49 @@ class VAE:
                 print(f"KL: {min_kl}, R: {min_r}")
 
             i += 1
+            
+        self.layers = best_weights
+
+
         return self.total_loss
+
+    def save_weights(self):
+        encoder = self.layers[:self.latent_idx]
+        decoder = self.layers[self.latent_idx + 1:]
+
+        encoder_weights = []
+        for layer in encoder:
+            encoder_weights.append(layer.weights.tolist())
+
+        decoder_weights = []
+        for layer in decoder:
+            decoder_weights.append(layer.weights.tolist())
+
+        with open("weights.json", "w") as file:
+            json.dump({
+                "encoder": encoder_weights,
+                "decoder": decoder_weights
+            }, file)
+
+    def load_weights(self):
+        with open("weights.json", "r") as file:
+            weights = json.load(file)
+
+            encoder_weights = weights["encoder"]
+            decoder_weights = weights["decoder"]
+
+            encoder = self.layers[:self.latent_idx]
+            decoder = self.layers[self.latent_idx + 1:]
+
+            for idx, layer in enumerate(encoder):
+                layer.weights = np.array(encoder_weights[idx])
+
+            for idx, layer in enumerate(decoder):
+                layer.weights = np.array(decoder_weights[idx])
+
+    
+            
+        
+
 
     
