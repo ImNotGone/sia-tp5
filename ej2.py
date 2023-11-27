@@ -62,14 +62,21 @@ def main():
         # 64 -> 16 -> 2 -> 16 -> 64
         latent_dim = 2
         vae = VAE(
-            [first_layer_size, 32, 32, latent_dim],
+            [first_layer_size, 64, 64, 64, latent_dim],
             act_func,
             act_func_derivative,
             optimization_method,
             learning_rate
         )
 
-        errors_per_epoch = vae.train(max_epochs, data)
+        errors_per_epoch = []
+        if config["load_weights"]:
+            vae.load_weights()
+        else:
+            errors_per_epoch = vae.train(max_epochs, data)
+
+        if config["save_weights"]:
+            vae.save_weights()
 
         reconstructed_fonts = []
         encoded_samples = []
@@ -91,10 +98,95 @@ def main():
         plot_errors_per_epoch(errors_per_epoch)
 
         if latent_dim == 1:
+            plot_latent_space_1d(vae, data)
             decode_latent_space_1d(vae, data, data_dim)
         elif latent_dim == 2:
+            plot_latent_space_2d(vae, data)
+            plot_latent_space_2d_point(vae, data)
             decode_latent_space_2d(vae, data, data_dim)
+        
+
+
 import matplotlib.pyplot as plt
+def plot_latent_space_1d(vae, data):
+    plt.figure()
+    # In a vae, the output of the encoder is the mean and std of the latent space
+    # So we can plot samples from the distribution of the latent space
+
+    colors = ["red", "green", "blue", "yellow", "black", "orange", "purple", "pink", "brown", "gray"]
+
+    # We need to plot samples following the std and mean of the latent space
+    samples = 100
+
+    # Sample the distribution for each sample
+    for i, sample in enumerate(data):
+
+        points = []
+        for j in range(samples):
+            encoded_sample = vae.encode_sample(sample)
+            x, y = encoded_sample[0], 0
+            points.append((x, y))
+
+        x, y = zip(*points)
+
+        plt.scatter(x, y, c=colors[i % len(colors)])
+        
+
+    plt.title("Latent space")
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    plt.savefig("latent_space.png")
+
+def plot_latent_space_2d(vae, data):
+    plt.figure()
+    # In a vae, the output of the encoder is the mean and std of the latent space
+    # So we can plot a 2d graph with a sample from the distribution of the latent space
+
+    # 12 colors
+    colors = ["red", "green", "blue", "yellow", "black", "orange", "purple", "pink", "brown", "gray", "cyan", "magenta"]
+
+    # Sample the distribution for each sample
+    for i, sample in enumerate(data):
+        x_arr, y_arr = [], []
+        for j in range(100):
+            encoded_sample = vae.encode_sample(sample)
+            x, y = encoded_sample[0], encoded_sample[1]
+            x_arr.append(x)
+            y_arr.append(y)
+
+
+        plt.scatter(x_arr, y_arr, c=colors[i % len(colors)])
+
+
+    plt.title("Latent space")
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    plt.savefig("latent_space_100.png")
+
+def plot_latent_space_2d_point(vae, data):
+    plt.figure()
+    # In a vae, the output of the encoder is the mean and std of the latent space
+    # So we can plot a 2d graph with a sample from the distribution of the latent space
+
+    # 12 colors
+    colors = ["red", "green", "blue", "yellow", "black", "orange", "purple", "pink", "brown", "gray", "cyan", "magenta"]
+
+    # Sample the distribution for each sample
+    for i, sample in enumerate(data):
+        encoded_sample = vae.encode_sample(sample)
+        x, y = encoded_sample[0], encoded_sample[1]
+
+        plt.scatter(x, y, c=colors[i % len(colors)])
+
+
+    plt.title("Latent space")
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    plt.savefig("latent_space_1.png")
+
 def decode_latent_space_1d(vae, data, shape):
 
     encodings = []
@@ -141,8 +233,18 @@ def decode_latent_space_2d(vae, data, shape):
     x = np.linspace(min_x, max_x, steps)
     y = np.linspace(min_y, max_y, steps)
 
+    # First show the values of each step in a plot
+    # As text (x, y)
+    for i in reversed(range(steps)):
+        for j in range(steps):
+            # 3 decimals, no line break
+            print(f"({x[j]:.3f}, {y[i]:.3f})", end=" ")
+        print()
+
+
+
     decoded_samples = []
-    for i in range(steps):
+    for i in reversed(range(steps)):
         for j in range(steps):
             encoded_sample = np.array([x[j], y[i]])
             decoded_sample = vae.decode_sample(encoded_sample)
