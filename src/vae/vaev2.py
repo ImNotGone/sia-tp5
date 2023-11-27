@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.multilayer_perceptron import NeuronLayer
+from src.utils import stop
 
 def reconstruction_loss(generated_output, expected_output):
     return 0.5 * sum(np.power(generated_output - expected_output, 2))
@@ -210,6 +211,10 @@ class VAE:
         self.total_loss = []
 
         while i < limit:
+
+            if stop():
+                return min_error
+
             error = 0
 
             for elem in train_data:
@@ -231,7 +236,8 @@ class VAE:
             if error < min_error:
                 min_error = error
 
-            if i % 200 == 0:
+            # Each 5%
+            if i % (limit / 20) == 0:
                 print(f"Epoch: {i}, Min error: {min_error}")
 
             i += 1

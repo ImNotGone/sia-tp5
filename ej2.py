@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 from src.dataset_loaders import load_emoji_data, load_font_data
-from src.activation_functions import relu, relu_derivative
+from src.activation_functions import get_activation_function, relu, relu_derivative, logistic, logistic_derivative
 from src.vae.vaev2 import VAE
 
 from src.vae.vae_opt_methods import ADAM
@@ -42,12 +42,11 @@ def main():
 
         learning_rate = [0.001, 0.9, 0.999, 1e-8]
         loss_func = squared_error
-        act_func = relu
-        act_func_derivative = relu_derivative
+        act_func, act_func_derivative, _ = get_activation_function(config["activation"]["function"], config["activation"]["beta"])
 
         # 64 -> 16 -> 2 -> 16 -> 64
         vae = VAE(
-            [35, 16, 16, 1],
+            [35, 35, 35, 35, 2],
             act_func,
             act_func_derivative,
             optimization_method,
