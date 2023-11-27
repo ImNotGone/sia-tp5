@@ -75,7 +75,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(learning_rate)
+                optimizer(*learning_rate)
             ))
 
         #   Generamos espacio latente 
@@ -90,7 +90,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(learning_rate)
+                optimizer(*learning_rate)
             ),
         )
 
@@ -110,7 +110,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(learning_rate)
+                optimizer(*learning_rate)
             ))
 
     def forward_propagation(self, input_data):

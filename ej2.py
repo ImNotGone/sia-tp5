@@ -6,7 +6,7 @@ from src.dataset_loaders import load_emoji_data, load_font_data
 from src.activation_functions import relu, relu_derivative
 from src.vae.vaev2 import VAE
 
-from src.optimization_methods import get_optimization_method
+from src.vae.vae_opt_methods import ADAM
 
 from src.utils import (
     create_image,
@@ -38,9 +38,9 @@ def main():
 
         batch_size = get_batch_size(config, data[0].shape[0])
 
-        optimization_method = get_optimization_method(config["optimization"])
+        optimization_method = ADAM
 
-        learning_rate = 0.1
+        learning_rate = [0.001, 0.9, 0.999, 1e-8]
         loss_func = squared_error
         act_func = relu
         act_func_derivative = relu_derivative
@@ -60,7 +60,7 @@ def main():
         encoded_samples = []
         original_fonts = []
         for emoji in data:
-            reconstructed_sample = vae.encode(emoji[None, :])
+            reconstructed_sample = vae.encode(emoji)
             encoded_samples.append(reconstructed_sample)
             # reconstructed_font = reconstructed_sample.reshape((7, 5))
             # reconstructed_fonts.append(reconstructed_font)

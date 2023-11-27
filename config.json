@@ -18,7 +18,7 @@
   ],
   "latent_space_size": 2,
   "target_error": 0.001,
-  "max_epochs": 100000,
+  "max_epochs": 1000,
   "training_strategy": "batch",
   "batch_size": 10,
   "noise_probability_training": 0.01,

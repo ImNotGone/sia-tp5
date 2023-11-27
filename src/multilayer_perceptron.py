@@ -47,7 +47,7 @@ class NeuronLayer:
         return self.output  # Se ejecuta la funcion sobre cada elemento del arreglo
 
     def update_weights(self, delta_w):
-        self.weights += self.optimizer(delta_w)
+        self.weights += self.optimizer.calc_delta_w(delta_w)
 
 
 
