@@ -12,6 +12,44 @@ from src.utils import signal_handler, stop
 
 signal.signal(signal.SIGINT, signal_handler)
 
+class NeuronLayer:
+    def __init__(self,
+                 previous_layer_neuron_amount,
+                 current_layer_neurons_amount,
+                 activation_function,
+                 lower_weight,
+                 upper_weight,
+                 optimizer: OptimizationMethod
+                 ):
+
+        self.excitement = None
+        self.output = None
+        self.activation_function = activation_function
+
+        self.optimizer = optimizer
+
+        # Se genera una matrix de (current_layer_neurons_amount x previous_layer_neuron_amount)
+        weights = []
+        for i in range(current_layer_neurons_amount):
+            weights.append([])
+            for j in range(previous_layer_neuron_amount):
+                weights[i].append(random.uniform(lower_weight, upper_weight))
+        self.weights = np.array(weights)
+
+
+    def compute_activation(self, prev_input):
+
+        # guardamos el dot producto dado que lo vamos a usar aca y en el backpropagation
+        self.excitement = np.dot(self.weights, prev_input)
+
+        self.output = self.activation_function(self.excitement)
+
+        return self.output  # Se ejecuta la funcion sobre cada elemento del arreglo
+
+    def update_weights(self, delta_w):
+        self.weights += self.optimizer(delta_w)
+
+
 
 def multilayer_perceptron(
     data: List[Tuple[NDArray, NDArray]],
