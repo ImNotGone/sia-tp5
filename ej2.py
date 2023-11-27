@@ -3,8 +3,8 @@ import json
 import numpy as np
 
 from src.dataset_loaders import load_emoji_data, load_font_data
-from src.vae.vae_activations import relu, sigmoid, tanh, identity, selu
-from src.vae.vae import VAE
+from src.activation_functions import relu, relu_derivative
+from src.vae.vaev2 import VAE
 
 from src.optimization_methods import get_optimization_method
 
@@ -42,28 +42,33 @@ def main():
 
         learning_rate = 0.1
         loss_func = squared_error
-        act_func = sigmoid
+        act_func = relu
+        act_func_derivative = relu_derivative
 
         # 64 -> 16 -> 2 -> 16 -> 64
         vae = VAE(
-            [[35, 16], [16, 35]],
-            2,
-            learning_rate,
-            max_epochs,
-            batch_size,
-            loss_func,
+            [35, 16, 16, 1],
             act_func,
+            act_func_derivative,
+            optimization_method,
+            learning_rate
         )
 
-        errors_per_epoch = vae.learn(data)
+        errors_per_epoch = vae.train(max_epochs, data)
 
         reconstructed_fonts = []
+        encoded_samples = []
         original_fonts = []
         for emoji in data:
-            reconstructed_sample = vae.encode_decode(emoji[None, :])
-            reconstructed_font = reconstructed_sample.reshape((7, 5))
-            reconstructed_fonts.append(reconstructed_font)
+            reconstructed_sample = vae.encode(emoji[None, :])
+            encoded_samples.append(reconstructed_sample)
+            # reconstructed_font = reconstructed_sample.reshape((7, 5))
+            # reconstructed_fonts.append(reconstructed_font)
             original_fonts.append(emoji.reshape((7, 5)))
+
+        for encoded in encoded_samples:
+            reconstructed_font = vae.decode(encoded)
+            reconstructed_fonts.append(reconstructed_font.reshape((7, 5)))
 
         create_image(original_fonts, "original.png", (7, 5))
         create_image(reconstructed_fonts, "reconstructed.png", (7, 5))

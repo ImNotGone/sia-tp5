@@ -50,11 +50,13 @@ class VAE:
                  activation_function,
                  derivative_activation_function,
                  optimizer,
-                 optimizer_args
+                 learning_rate
                  ):
 
         self.activation_function = activation_function
         self.derivative_activation_function = derivative_activation_function
+
+        self.learning_rate = learning_rate
 
         # Caclculamos el rango de valores iniciales para los weights
         upper_weight = 1
@@ -73,7 +75,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(*optimizer_args)
+                optimizer(learning_rate)
             ))
 
         #   Generamos espacio latente 
@@ -88,7 +90,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(*optimizer_args)
+                optimizer(learning_rate)
             ),
         )
 
@@ -108,7 +110,7 @@ class VAE:
                 self.activation_function,
                 lower_weight,
                 upper_weight,
-                optimizer(*optimizer_args)
+                optimizer(learning_rate)
             ))
 
     def forward_propagation(self, input_data):
