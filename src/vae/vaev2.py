@@ -226,6 +226,8 @@ class VAE:
         self.r_loss = []
         self.total_loss = []
 
+        best_weights = None
+
         while i < limit:
 
             if stop():
@@ -264,6 +266,7 @@ class VAE:
                 min_error = error
                 min_kl = kl_loss
                 min_r = r_loss
+                best_weights = self.layers.copy()
 
             # Each 5%
             if i % (limit / 20) == 0:
@@ -271,6 +274,10 @@ class VAE:
                 print(f"KL: {min_kl}, R: {min_r}")
 
             i += 1
+            
+        self.layers = best_weights
+
+
         return self.total_loss
 
     
