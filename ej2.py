@@ -20,7 +20,7 @@ from src.plots import plot_errors_per_epoch
 from src.vae.vae_loss_functions import squared_error
 
 def main():
-    dataset = "emoji_new"
+    dataset = "emoji"
 
     if dataset == "emoji":
         data = load_emoji_data()
@@ -60,8 +60,9 @@ def main():
         act_func, act_func_derivative, _ = get_activation_function(config["activation"]["function"], config["activation"]["beta"])
 
         # 64 -> 16 -> 2 -> 16 -> 64
+        latent_dim = 2
         vae = VAE(
-            [first_layer_size, 35, 35, 35, 2],
+            [first_layer_size, 32, 32, latent_dim],
             act_func,
             act_func_derivative,
             optimization_method,
@@ -88,6 +89,73 @@ def main():
         create_image(reconstructed_fonts, "reconstructed.png", image_dim)
 
         plot_errors_per_epoch(errors_per_epoch)
+
+        if latent_dim == 1:
+            decode_latent_space_1d(vae, data, data_dim)
+        elif latent_dim == 2:
+            decode_latent_space_2d(vae, data, data_dim)
+import matplotlib.pyplot as plt
+def decode_latent_space_1d(vae, data, shape):
+
+    encodings = []
+    for i, sample in enumerate(data):
+        encoded_sample = vae.encode_sample(sample)
+        encodings.append(encoded_sample)
+
+    min_x = min(encodings)
+    max_x = max(encodings)
+
+    steps = 12
+
+    x = np.linspace(min_x, max_x, steps)
+
+    decoded_samples = []
+    for i in range(steps):
+        encoded_sample = np.array([x[i]])
+        decoded_sample = vae.decode_sample(encoded_sample)
+        decoded_sample = decoded_sample.reshape(shape)
+        decoded_samples.append(decoded_sample)
+
+    image_dim = (steps, 1)
+
+    create_image(decoded_samples, "decoded_samples.png", image_dim)
+
+def decode_latent_space_2d(vae, data, shape):
+
+    encodings = []
+    for i, sample in enumerate(data):
+        encoded_sample = vae.encode_sample(sample)
+        encodings.append(encoded_sample)
+
+    min_x = min([x[0] for x in encodings])
+    max_x = max([x[0] for x in encodings])
+
+    min_y = min([x[1] for x in encodings])
+    max_y = max([x[1] for x in encodings])
+
+    print(f"x: {min_x} - {max_x}")
+    print(f"y: {min_y} - {max_y}")
+
+    steps = len(data)
+
+    x = np.linspace(min_x, max_x, steps)
+    y = np.linspace(min_y, max_y, steps)
+
+    decoded_samples = []
+    for i in range(steps):
+        for j in range(steps):
+            encoded_sample = np.array([x[j], y[i]])
+            decoded_sample = vae.decode_sample(encoded_sample)
+            decoded_sample = decoded_sample.reshape(shape)
+            decoded_samples.append(decoded_sample)
+
+    image_dim = (steps, steps)
+
+    create_image(decoded_samples, "decoded_samples.png", image_dim)
+
+
+
+        
 
 
 if __name__ == "__main__":

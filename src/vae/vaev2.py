@@ -197,6 +197,22 @@ class VAE:
             current = self.layers[i].compute_activation(current)
         return current
 
+    def encode_sample(self, data):
+        current = data
+        self.input = data
+        for i in range(self.latent_idx):
+            current = self.layers[i].compute_activation(current)
+
+        # Latent space
+        current = self.layers[self.latent_idx].compute_activation(current)
+        return current
+
+    def decode_sample(self, z):
+        current = z
+        for i in range(self.latent_idx + 1, len(self.layers)):
+            current = self.layers[i].compute_activation(current)
+        return current
+
     def decode(self, z):
         current = z
         for i in range(self.latent_idx, len(self.layers)):
@@ -217,6 +233,9 @@ class VAE:
 
             error = 0
 
+            iteration_error = []
+            iteration_kl = []
+            iteration_r = []
             for elem in train_data:
                 result = self.forward_propagation(elem)
                 delta_w = self.backward_propagation(elem, result)
@@ -226,19 +245,30 @@ class VAE:
                 kl_loss = kl(self.layers[self.latent_idx].mean, self.layers[self.latent_idx].std)
                 r_loss = reconstruction_loss(result, elem)
 
-                self.kl_loss.append(kl_loss)
-                self.r_loss.append(r_loss)
+                iteration_kl.append(kl_loss)
+                iteration_r.append(r_loss)
 
                 error = kl_loss + r_loss
 
-                self.total_loss.append(error)
+                iteration_error.append(error)
+
+            error = np.mean(iteration_error)
+            kl_loss = np.mean(iteration_kl)
+            r_loss = np.mean(iteration_r)
+
+            self.total_loss.append(error)
+            self.kl_loss.append(kl_loss)
+            self.r_loss.append(r_loss)
 
             if error < min_error:
                 min_error = error
+                min_kl = kl_loss
+                min_r = r_loss
 
             # Each 5%
             if i % (limit / 20) == 0:
                 print(f"Epoch: {i}, Min error: {min_error}")
+                print(f"KL: {min_kl}, R: {min_r}")
 
             i += 1
         return self.total_loss
