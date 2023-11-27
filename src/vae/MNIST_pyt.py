@@ -118,6 +118,30 @@ def plot_latent_space(model, scale=1.0, n=25, digit_size=28, figsize=15):
     plt.imshow(figure, cmap="Greys_r")
     plt.show()
     
+def plot_latent_distribution(model, test_loader, device):
+    model.eval()
+    latent_vectors = []
+    labels = []
+
+    with torch.no_grad():
+        for batch_idx, (x, y) in enumerate(test_loader):
+            x = x.view(-1, 784).to(device)
+            mean, _ = model.encode(x)
+            latent_vectors.append(mean.cpu().numpy())
+            labels.append(y.numpy())
+
+    latent_vectors = np.concatenate(latent_vectors, axis=0)
+    labels = np.concatenate(labels, axis=0)
+
+    plt.figure(figsize=(10, 8))
+    plt.scatter(latent_vectors[:, 0], latent_vectors[:, 1], c=labels, cmap='viridis')
+    plt.colorbar(label='Digit Label')
+    plt.title('Latent Space Distribution')
+    plt.xlabel('Latent Variable 1')
+    plt.ylabel('Latent Variable 2')
+    plt.grid(True)
+    plt.show()
+    
     
 transform = transforms.Compose([transforms.ToTensor()])
 
@@ -135,8 +159,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = VAE().to(device)
 optimizer = Adam(model.parameters(), lr=1e-3)
 
-train(model, optimizer, epochs=7, device=device)
+train(model, optimizer, epochs=10, device=device)
 
 generate_digit(0.0, 1.0), generate_digit(1.0, 0.0)
 
 plot_latent_space(model)
+plot_latent_distribution(model, test_loader, device)
