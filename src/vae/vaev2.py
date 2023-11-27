@@ -1,7 +1,6 @@
 import numpy as np
 
-from multilayer_perceptron import NeuronLayer
-
+from src.multilayer_perceptron import NeuronLayer
 
 def reconstruction_loss(generated_output, expected_output):
     return 0.5 * sum(np.power(generated_output - expected_output, 2))
