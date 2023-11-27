@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from src.dataset_loaders import load_emoji_data, load_font_data
+from src.dataset_loaders import load_emoji_data, load_emoji_new_data, load_font_data
 from src.activation_functions import get_activation_function, relu, relu_derivative, logistic, logistic_derivative
 from src.vae.vaev2 import VAE
 
@@ -19,11 +19,26 @@ from src.plots import plot_errors_per_epoch
 
 from src.vae.vae_loss_functions import squared_error
 
-import pickle, gzip
-
-
 def main():
-    data = load_font_data()
+    dataset = "emoji_new"
+
+    if dataset == "emoji":
+        data = load_emoji_data()
+        data_dim = (8, 8)
+        first_layer_size = 8 * 8
+        image_dim = (4, 3)
+    elif dataset == "font":
+        data = load_font_data()
+        data_dim = (7, 5)
+        first_layer_size = 7 * 5
+        image_dim = (7, 5)
+    elif dataset == "emoji_new":
+        data = load_emoji_new_data()
+        data_dim = (24, 24)
+        first_layer_size = 24 * 24
+        image_dim = (4, 3)
+    else:
+        raise Exception("Invalid dataset")
 
     # Flatten the matrix into a vector
     data = data.reshape((data.shape[0], -1))
@@ -46,7 +61,7 @@ def main():
 
         # 64 -> 16 -> 2 -> 16 -> 64
         vae = VAE(
-            [35, 35, 35, 35, 2],
+            [first_layer_size, 35, 35, 35, 2],
             act_func,
             act_func_derivative,
             optimization_method,
@@ -63,14 +78,14 @@ def main():
             encoded_samples.append(reconstructed_sample)
             # reconstructed_font = reconstructed_sample.reshape((7, 5))
             # reconstructed_fonts.append(reconstructed_font)
-            original_fonts.append(emoji.reshape((7, 5)))
+            original_fonts.append(emoji.reshape(data_dim))
 
         for encoded in encoded_samples:
             reconstructed_font = vae.decode(encoded)
-            reconstructed_fonts.append(reconstructed_font.reshape((7, 5)))
+            reconstructed_fonts.append(reconstructed_font.reshape(data_dim))
 
-        create_image(original_fonts, "original.png", (7, 5))
-        create_image(reconstructed_fonts, "reconstructed.png", (7, 5))
+        create_image(original_fonts, "original.png", image_dim)
+        create_image(reconstructed_fonts, "reconstructed.png", image_dim)
 
         plot_errors_per_epoch(errors_per_epoch)
 

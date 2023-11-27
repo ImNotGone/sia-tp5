@@ -213,7 +213,7 @@ class VAE:
         while i < limit:
 
             if stop():
-                return min_error
+                return self.total_loss
 
             error = 0
 
@@ -241,6 +241,6 @@ class VAE:
                 print(f"Epoch: {i}, Min error: {min_error}")
 
             i += 1
-        return min_error
+        return self.total_loss
 
     
